@@ -5,7 +5,6 @@ import time
 import wrds
 import pandas as pd
 from datetime import date, timedelta
-db = wrds.Connection()
 from pathlib import Path
 
 
@@ -52,6 +51,7 @@ class PriceLoader:
         """
         Download all tickers in batches and store locally.
         """
+        db = wrds.Connection()
         for i in range(0, len(self.tickers), batch_size):
             batch = self.tickers[i:i+batch_size]
             print(f"Fetching batch {i//batch_size + 1}: {batch}")
