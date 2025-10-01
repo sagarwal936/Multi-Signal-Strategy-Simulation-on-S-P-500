@@ -10,5 +10,5 @@ class BenchmarkStrategy(Strategy):
         """
         signals_df = self.data.copy()
         signals_df['signal'] = 0
-        signals_df.iloc[0]['signal'] = x
+        signals_df.at[signals_df.index[0], 'signal'] = x
         return signals_df

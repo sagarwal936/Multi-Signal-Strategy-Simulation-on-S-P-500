@@ -26,6 +26,6 @@ class Strategy:
         pd.DataFrame: The original data DataFrame with a new 'signal' column. Signal values: 1 for BUY, 0 for HODL.
         """
         # This will just create a column of zeros.
-        signal_df = self.data.copy()
+        signals_df = self.data.copy()
         signals_df['signal'] = 0
         return signals_df
