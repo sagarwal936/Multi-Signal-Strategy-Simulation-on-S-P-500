@@ -12,3 +12,4 @@ class Config:
         "MACDStrategy": MACDStrategy,
         "RSIStrategy": RSIStrategy,
     }
+    Close_Col = 'Close'

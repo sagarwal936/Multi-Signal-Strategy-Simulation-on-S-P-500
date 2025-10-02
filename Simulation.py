@@ -32,7 +32,6 @@ class Simluation:
     def run(self):
         def simulation(stock: str, strategy_name: 'str', initial_cash=0):
             stock_loader = self._loader.load(stock)
-            
             if strategy_name not in Config.STRATEGY_MAP:
                 raise ValueError(f"Unknown strategy: {strategy_name}")
             StrategyClass = Config.STRATEGY_MAP[strategy_name]
@@ -47,7 +46,7 @@ class Simluation:
             company_holdings=0 # {'MSFT':305}
             cash=initial_cash
             for key in date_list:
-                adj_close=z.loc[key]['AdjClose']
+                adj_close=z.loc[key][Config.Close_Col]
                 signal=int(z.loc[key]['signal'])
                 cash -= adj_close*signal
                 company_holdings += signal
@@ -81,7 +80,7 @@ class Simluation:
 if __name__ == "__main__":
     strats = list(Config.STRATEGY_MAP.keys())
     for strat in strats:
-        obj = Simluation("MovingAverageStrategy")
+        obj = Simluation(strat)
         obj.run()
         df=pd.DataFrame.from_dict(obj)
         df['Cash']+=1000000

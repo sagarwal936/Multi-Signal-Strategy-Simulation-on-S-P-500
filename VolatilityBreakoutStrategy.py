@@ -4,6 +4,7 @@
 
 import pandas as pd
 from Strategy import Strategy
+from config import Config
 
 class VolatilityBreakoutStrategy(Strategy):
     """
@@ -18,7 +19,7 @@ class VolatilityBreakoutStrategy(Strategy):
         signals_df = self.data.copy()
 
         # Calculate daily returns
-        signals_df['daily_return'] = signals_df['AdjClose'].pct_change()
+        signals_df['daily_return'] = signals_df[Config.Close_Col].pct_change()
         
         # Calculate the rolling 20-day std of returns
         signals_df['volatility'] = signals_df['daily_return'].rolling(window=20).std()
