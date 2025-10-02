@@ -2,10 +2,7 @@
 
 import pandas as pd
 from pathlib import Path
-from MovingAverageStrategy import MovingAverageStrategy
-from VolatilityBreakoutStrategy import VolatilityBreakoutStrategy
-from MACDStrategy import MACDStrategy
-from RSIStrategy import RSIStrategy
+from config import Config
 from data_generator import PriceLoader
 from collections import defaultdict
 
@@ -35,22 +32,14 @@ class Simluation:
     def run(self):
         def simulation(stock: str, strategy_name: 'str', initial_cash=0):
             stock_loader = self._loader.load(stock)
-            if strategy_name=="MovingAverageStrategy":
-                x= MovingAverageStrategy(stock_loader)
-                z = x.generate_signals()
-                date_list = list(z.index)
-            elif strategy_name=="VolatilityBreakoutStrategy":
-                x= VolatilityBreakoutStrategy(stock_loader)
-                z = x.generate_signals()
-                date_list = list(z.index)
-            elif strategy_name=="MACDStrategy":
-                x= MACDStrategy(stock_loader)
-                z = x.generate_signals()
-                date_list = list(z.index)
-            elif strategy_name=="RSIStrategy":
-                x= RSIStrategy(stock_loader)
-                z = x.generate_signals()
-                date_list = list(z.index)
+            
+            if strategy_name not in Config.STRATEGY_MAP:
+                raise ValueError(f"Unknown strategy: {strategy_name}")
+            StrategyClass = Config.STRATEGY_MAP[strategy_name]
+            Strat_class = StrategyClass(stock_loader)
+            z = Strat_class.generate_signals()
+
+            date_list = list(z.index)
             gross_holdings = {val: defaultdict() for val in date_list} # {2001/01/01: {'Cash':500K, 'Holdings':700K, 'Total Assets':1.2M}}
             total_cash=defaultdict(float)
             total_holdings=defaultdict(float)
@@ -90,7 +79,7 @@ class Simluation:
         return return_dataset
 
 if __name__ == "__main__":
-    strats = ["MovingAverageStrategy", "VolatilityBreakoutStrategy", "MACDStrategy", "RSIStrategy"]
+    strats = list(Config.STRATEGY_MAP.keys())
     for strat in strats:
         obj = Simluation("MovingAverageStrategy")
         obj.run()

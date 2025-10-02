@@ -10,29 +10,33 @@ from pathlib import Path
 
 # Getting the list of S&P 500 tickers from WRDS
 def get_sp500_tickers():
-    sp500 = db.raw_sql("""
-                            select a.*, b.date, b.ret
-                            from crsp.msp500list as a,
-                            crsp.msf as b
-                            where a.permno=b.permno
-                            and b.date >= a.start and b.date<= a.ending
-                            and b.date>='01/01/2024'
-                            order by date;
-                            """, date_cols=['start', 'ending', 'date'])
+    # sp500 = db.raw_sql("""
+    #                         select a.*, b.date, b.ret
+    #                         from crsp.msp500list as a,
+    #                         crsp.msf as b
+    #                         where a.permno=b.permno
+    #                         and b.date >= a.start and b.date<= a.ending
+    #                         and b.date>='01/01/2024'
+    #                         order by date;
+    #                         """, date_cols=['start', 'ending', 'date'])
 
-    mse = db.raw_sql("""
-                            select comnam, ncusip, namedt, nameendt, 
-                            permno, shrcd, exchcd, hsiccd, ticker
-                            from crsp.msenames
-                            """, date_cols=['namedt', 'nameendt'])
+    # mse = db.raw_sql("""
+    #                         select comnam, ncusip, namedt, nameendt, 
+    #                         permno, shrcd, exchcd, hsiccd, ticker
+    #                         from crsp.msenames
+    #                         """, date_cols=['namedt', 'nameendt'])
 
-    mse['nameendt']=mse['nameendt'].fillna(pd.to_datetime('today'))
-    sp500_full = pd.merge(sp500, mse, how = 'left', on = 'permno')
-    sp500_full = sp500_full.loc[(sp500_full.date>=sp500_full.namedt) \
-                                & (sp500_full.date<=sp500_full.nameendt)]
-    ticker_list = list(sp500_full['ticker'].unique())
+    # mse['nameendt']=mse['nameendt'].fillna(pd.to_datetime('today'))
+    # sp500_full = pd.merge(sp500, mse, how = 'left', on = 'permno')
+    # sp500_full = sp500_full.loc[(sp500_full.date>=sp500_full.namedt) \
+    #                             & (sp500_full.date<=sp500_full.nameendt)]
+    # ticker_list = list(sp500_full['ticker'].unique())
+    # return ticker_list
+
+    folder = Path("sp500_prices/")
+    ticker_list = [p.stem for p in folder.glob("*.parquet")]
+    ticker_list.sort()
     return ticker_list
-
 
 
 class PriceLoader:
@@ -51,20 +55,28 @@ class PriceLoader:
         """
         Download all tickers in batches and store locally.
         """
-        db = wrds.Connection()
+        # db = wrds.Connection()
         for i in range(0, len(self.tickers), batch_size):
             batch = self.tickers[i:i+batch_size]
             print(f"Fetching batch {i//batch_size + 1}: {batch}")
-            data = yf.download(batch, start=self.start, end=self.end, auto_adjust=True, progress=False)["Close"]
+            data = yf.download(batch, start=self.start, end=self.end, auto_adjust=True, progress=False)
             
+            if data is None:
+                print(f"No data returned for batch {batch}. Skipping.")
+                time.sleep(pause)
+                continue
             # Save each ticker separately
             for ticker in batch:
-                if ticker not in data.columns:
+                if 'Close' not in data or ticker not in data['Close'].columns:
                     continue  # skip missing tickers
-                series = data[ticker].dropna()
-                if len(series) < 2500:  # drop sparse tickers
+                # Select the ('Close', ticker) and ('Volume', ticker) columns
+                cols = [('Close', ticker), ('Volume', ticker)]
+                if not all(col in data.columns for col in cols):
                     continue
-                df = series.to_frame(name="AdjClose")
+                df = data.loc[:, cols].dropna()
+                df.columns = ['Close', 'Volume']   # flatten column names
+                if len(df) < 2500:  # drop sparse tickers
+                    continue
                 if self.fmt == "parquet":
                     df.to_parquet(self._save_path(ticker))
                 else:
