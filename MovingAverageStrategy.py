@@ -4,6 +4,7 @@
 
 import pandas as pd
 from Strategy import Strategy
+from config import Config
 
 class MovingAverageStrategy(Strategy):
     """
@@ -20,8 +21,8 @@ class MovingAverageStrategy(Strategy):
         long_window = 50
 
         # Calculate the SMAs using pandas rolling mean
-        signals_df['SMA_20'] = signals_df['AdjClose'].rolling(window=short_window, min_periods=1).mean()
-        signals_df['SMA_50'] = signals_df['AdjClose'].rolling(window=long_window, min_periods=1).mean()
+        signals_df['SMA_20'] = signals_df[Config.Close_Col].rolling(window=short_window, min_periods=1).mean()
+        signals_df['SMA_50'] = signals_df[Config.Close_Col].rolling(window=long_window, min_periods=1).mean()
 
         # Init signals as 0
         signals_df['signal'] = 0

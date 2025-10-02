@@ -4,6 +4,7 @@
 
 import pandas as pd
 from Strategy import Strategy
+from config import Config
 
 class MACDStrategy(Strategy):
     """
@@ -20,8 +21,8 @@ class MACDStrategy(Strategy):
         signal_ema_period = 9
 
         # Calculate short-term and long-term EMAs
-        short_ema = signals_df['AdjClose'].ewm(span=short_ema_period, adjust=False).mean()
-        long_ema = signals_df['AdjClose'].ewm(span=long_ema_period, adjust=False).mean()
+        short_ema = signals_df[Config.Close_Col].ewm(span=short_ema_period, adjust=False).mean()
+        long_ema = signals_df[Config.Close_Col].ewm(span=long_ema_period, adjust=False).mean()
 
         # Calculate the MACD line
         signals_df['MACD_line'] = short_ema - long_ema
