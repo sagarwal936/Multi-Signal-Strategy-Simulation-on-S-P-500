@@ -6,7 +6,7 @@ from config import Config
 from data_generator import PriceLoader
 from collections import defaultdict
 
-class Simluation:
+class Simulation:
     """
     Run the simulation with a list of stocks and strats.
     Args: stock_list, (e.g. ['AAPL']); strat_list (e.g. ['MovingAverage'])
@@ -80,9 +80,9 @@ class Simluation:
 if __name__ == "__main__":
     strats = list(Config.STRATEGY_MAP.keys())
     for strat in strats:
-        obj = Simluation(strat)
-        obj.run()
-        df=pd.DataFrame.from_dict(obj)
+        obj = Simulation(strat)
+        result = obj.run()
+        df=pd.DataFrame.from_dict(result)
         df['Cash']+=1000000
         df['Total Assets']+=1000000
         df.to_csv(f'output/{strat}.csv', index=False)
