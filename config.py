@@ -1,5 +1,4 @@
 """Centralized constants and default parameters for backtesting and strategies."""
-
 from BenchmarkStrategy import BenchmarkStrategy
 from MovingAverageStrategy import MovingAverageStrategy
 from VolatilityBreakoutStrategy import VolatilityBreakoutStrategy

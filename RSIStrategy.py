@@ -4,7 +4,6 @@
 
 import pandas as pd
 from Strategy import Strategy
-from config import Config
 
 class RSIStrategy(Strategy):
     """
@@ -19,7 +18,7 @@ class RSIStrategy(Strategy):
         rsi_period = 14
 
         # Calculate price changes
-        delta = signals_df[Config.Close_Col].diff()
+        delta = signals_df['Close'].diff()
 
         # Separate gains (positive changes) and losses (- changes)
         gain = delta.where(delta > 0, 0)
